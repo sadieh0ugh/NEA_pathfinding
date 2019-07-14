@@ -6,7 +6,13 @@ pygame.init()
 screen = pygame.display.set_mode((ScreenWidth,ScreenHeight))
 pygame.display.set_caption('Maze Manual')
 clock = pygame.time.Clock()
-done = False
+
+fontMain = pygame.font.Font('VT323-Regular.ttf', 50)
+
+text = fontMain. render("Explanation Box:", True, purple, black)
+
+textRect = text.get_rect()
+textRect.center = (770,25)
 
 class Player(object):
 
@@ -100,33 +106,90 @@ for row in level:
     y += 16
     x = 0
 
-running = True
-while running:
-    clock.tick(90)
 
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT:
-            running = False
-        if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-            running = False
+# function that renders surface for text to be displayed on
+# eliminates box around text being created
+def textObj(text, font):
+    textSurface = font.render(text, True, white)
+    return textSurface, textSurface.get_rect()
 
-    # Move the player if an arrow key is pressed
-    key = pygame.key.get_pressed()
-    if key[pygame.K_LEFT]:
-        player.move(-2, 0)
-    if key[pygame.K_RIGHT]:
-        player.move(2, 0)
-    if key[pygame.K_UP]:
-        player.move(0, -2)
-    if key[pygame.K_DOWN]:
-        player.move(0, 2)
+# lots of details required hence a lot of parameters
+# msg - what button says, x,y - position of button, w,h - width, height of button
+# ic - inactive colour (normal colour), ac - active (selected) colour
+def button(msg, x, y, w, h, ic, ac, action=None):
+    mouse = pygame.mouse.get_pos()
+    #print(mouse)    if need to see positions easier for placing
+    click = pygame.mouse.get_pressed()
 
-    screen.fill(white)
-    for wall in walls:
-        pygame.draw.rect(screen, black, wall.rect)
+    if x + w > mouse[0] > x and y + h > mouse[1] > y:  # if mouse position is found in range inside drawn box
+        pygame.draw.rect(screen, ac,(x, y, w, h)) # then redraw box a lighter shade so it appears interactive
 
-    pygame.draw.rect(screen, orange, player.rect)
-    pygame.draw.rect(screen, green, end_rect)
-    pygame.display.flip()
+        if click[0] == 1 and action != None:
+            if action == "play":
+                GameLoop()
+            #elif action == "tutorial":
+                #Tutorial()
+    else:
+        pygame.draw.rect(screen, ic, (x, y, w, h))  # whenever mouse isnt over box it remains normal colour
+
+    mainFont = pygame.font.Font("VT323-Regular.ttf", 50)
+    textSurf, textRect = textObj(msg, mainFont)
+    textRect.center = ((x + (w / 2)), (y + (h / 2)))  # centres Start text in button 1
+    screen.blit(textSurf, textRect)
     pygame.display.update()
 
+
+def start_screen():
+
+    running = True
+    while running:
+
+        clock.tick(15)
+        screen.fill(black)
+
+        button("Tutorial", 150, 300, 200, 100, purple, selected_purple,"tutorial")
+        button("Start", 600, 300, 200, 100, purple, selected_purple,"play")
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                running = False
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                running = False
+
+
+def GameLoop():
+
+    running = True
+    while running:
+        clock.tick(90)
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                running = False
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                running = False
+
+        # Move the player if an arrow key is pressed
+        key = pygame.key.get_pressed()
+        if key[pygame.K_LEFT]:
+            player.move(-2, 0)
+        if key[pygame.K_RIGHT]:
+            player.move(2, 0)
+        if key[pygame.K_UP]:
+            player.move(0, -2)
+        if key[pygame.K_DOWN]:
+            player.move(0, 2)
+
+        screen.fill(black)
+        for wall in walls:
+            pygame.draw.rect(screen, purple, wall.rect)
+
+        screen.blit(text, textRect)
+
+        pygame.draw.rect(screen, white, player.rect)
+        pygame.draw.rect(screen, green, end_rect)
+        # pygame.display.flip()
+        pygame.display.update()
+
+
+start_screen()
