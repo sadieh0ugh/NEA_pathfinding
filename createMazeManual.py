@@ -1,23 +1,26 @@
 import pygame
-from CONST import *
+import time
+#from CONST import *
+
+ScreenWidth = 950
+ScreenHeight = 592
+
+
+#  COLOURS
+
+white = (255, 255, 255)
+black = (0, 0, 0)
+orange = (255, 200, 0)
+green = (71, 255, 107)
+purple = (165, 0, 236)
+selected_purple = (218, 128, 255)
 
 pygame.init()
-
-screen = pygame.display.set_mode((ScreenWidth,ScreenHeight))
-pygame.display.set_caption('Maze Manual')
-clock = pygame.time.Clock()
-
-fontMain = pygame.font.Font('VT323-Regular.ttf', 50)
-
-text = fontMain. render("Explanation Box:", True, purple, black)
-
-textRect = text.get_rect()
-textRect.center = (770,25)
 
 class Player(object):
 
     def __init__(self):
-        self.rect = pygame.Rect(16, 16, 13, 13)
+        self.rect = pygame.Rect(16, 16, 16, 16)
 
     def move(self, dx , dy):
 
@@ -50,6 +53,11 @@ class Wall(object):
     def __init__(self, pos):
         walls.append(self)
         self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
+
+screen = pygame.display.set_mode((ScreenWidth,ScreenHeight))
+pygame.display.set_caption('Maze Manual')
+clock = pygame.time.Clock()
+
 
 walls = []
 
@@ -92,7 +100,7 @@ level = [
     "W    W W  W        W    WWWW  W     W",
     "W WWWW WW W WWWWWW W WWWW  WWWWWWWWWW",
     "W    W    W        W                W",
-    "WWWWWWWWWWWWWWWWWEWWWWWWWWWWWWWWWWWWW"
+    "WWWWWWWWWWWWWWWWWWEWWWWWWWWWWWWWWWWWW"
 ]
 
 x = y = 0
@@ -109,8 +117,8 @@ for row in level:
 
 # function that renders surface for text to be displayed on
 # eliminates box around text being created
-def textObj(text, font):
-    textSurface = font.render(text, True, white)
+def textObj(text, font, col):
+    textSurface = font.render(text, True, col)
     return textSurface, textSurface.get_rect()
 
 # lots of details required hence a lot of parameters
@@ -133,7 +141,7 @@ def button(msg, x, y, w, h, ic, ac, action=None):
         pygame.draw.rect(screen, ic, (x, y, w, h))  # whenever mouse isnt over box it remains normal colour
 
     mainFont = pygame.font.Font("VT323-Regular.ttf", 50)
-    textSurf, textRect = textObj(msg, mainFont)
+    textSurf, textRect = textObj(msg, mainFont, white)
     textRect.center = ((x + (w / 2)), (y + (h / 2)))  # centres Start text in button 1
     screen.blit(textSurf, textRect)
     pygame.display.update()
@@ -156,8 +164,17 @@ def start_screen():
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 running = False
 
+def Win():
+    smallFont = pygame.font.Font("VT323-Regular.ttf", 35)
+    clock.tick(90)
+    textSurf, textRect = textObj("You Win!", smallFont, white)
+    textRect.center = (769, 100)
+    screen.blit(textSurf, textRect)
+    pygame.display.update()
 
 def GameLoop():
+    mainFont = pygame.font.Font("VT323-Regular.ttf", 50)
+    smallFont = pygame.font.Font("VT323-Regular.ttf", 35)
 
     running = True
     while running:
@@ -180,16 +197,34 @@ def GameLoop():
         if key[pygame.K_DOWN]:
             player.move(0, 2)
 
+        if player.rect.colliderect(end_rect):
+            Win()
+
+
         screen.fill(black)
         for wall in walls:
             pygame.draw.rect(screen, purple, wall.rect)
 
-        screen.blit(text, textRect)
+
+
+        #textRect.center = (770, 25)
 
         pygame.draw.rect(screen, white, player.rect)
         pygame.draw.rect(screen, green, end_rect)
+
         # pygame.display.flip()
+
+
+        textSurf, textRect = textObj("Explanation Box:", mainFont, purple)
+        textRect.center = (770, 25)  # centres Start text in button 1
+        screen.blit(textSurf, textRect)
+
+        textSurf, textRect = textObj("Get to the Green Square", smallFont, white)
+        textRect.center = (769, 70)
+        screen.blit(textSurf, textRect)
         pygame.display.update()
+
+
 
 
 start_screen()
