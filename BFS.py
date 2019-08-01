@@ -1,4 +1,5 @@
 import queue
+import time
 import pygame
 
 pygame.init()
@@ -8,6 +9,37 @@ orange = (255, 200, 0)
 green = (71, 255, 107)
 purple = (165, 0, 236)
 selected_purple = (218, 128, 255)
+
+class Player(object):
+
+    def __init__(self):
+        self.rect = pygame.Rect(16, 16, 16, 16)
+
+    def move(self, dx, dy):
+
+        if dx != 0:
+            self.move_single_axis(dx, 0)
+
+        if dy != 0:
+            self.move_single_axis(0, dy)
+
+    def move_single_axis(self, dx, dy):
+        self.rect.x += dx
+        self.rect.y += dy
+
+        for wall in walls:
+            if self.rect.colliderect(wall.rect):
+                if dx > 0:
+                    self.rect.right = wall.rect.left
+
+                if dx < 0:
+                    self.rect.left = wall.rect.right
+
+                if dy > 0:
+                    self.rect.bottom = wall.rect.top
+
+                if dy < 0:
+                    self.rect.top = wall.rect.bottom
 
 class Wall(object):
 
@@ -51,8 +83,8 @@ def createMaze2():
     global end_rect
     global start_rect
     maze = []
-    maze.append(["#", "#", "#", "#", "#", "O", "#", "#", "#"])
-    maze.append(["#", " ", " ", " ", " ", " ", " ", " ", "#"])
+    maze.append(["#", "#", "#", "#", "#", "#", "#", "#", "#"])
+    maze.append(["#", "O", " ", " ", " ", " ", " ", " ", "#"])
     maze.append(["#", " ", "#", "#", " ", "#", "#", " ", "#"])
     maze.append(["#", " ", "#", " ", " ", " ", "#", " ", "#"])
     maze.append(["#", " ", "#", " ", "#", " ", "#", " ", "#"])
@@ -68,8 +100,8 @@ def createMaze2():
                 Wall((x,y))
             if col == "X":
                 end_rect = pygame.Rect(x, y, 16, 16)
-            if col == "O":
-                start_rect = pygame.Rect(x, y, 16, 16)
+            #if col == "O":
+             #   start_rect = pygame.Rect(x, y, 16, 16)
             x += 16
         y += 16
         x = 0
@@ -80,7 +112,7 @@ def createMaze2():
 
 def printMaze(maze, path=""):
     global path_rect
-    for x, pos in enumerate(maze[0]):
+    for x, pos in enumerate(maze[1]):
         if pos == "O":
             start = x
 
@@ -123,7 +155,7 @@ def printMaze(maze, path=""):
 
 
 def valid(maze, moves):
-    for x, pos in enumerate(maze[0]):
+    for x, pos in enumerate(maze[1]):
         if pos == "O":
             start = x
 
@@ -152,7 +184,7 @@ def valid(maze, moves):
 
 
 def findEnd(maze, moves):
-    for x, pos in enumerate(maze[0]):
+    for x, pos in enumerate(maze[1]):
         if pos == "O":
             start = x
 
@@ -203,7 +235,7 @@ while not findEnd(maze, add):
             nums.put(put)
             # add to queue
 
-
+player = Player()
 running = True
 while running:
     clock.tick(90)
@@ -214,17 +246,28 @@ while running:
         if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
             running = False
 
+    key = pygame.key.get_pressed()
+    if key[pygame.K_LEFT]:
+        player.move(-2, 0)
+    if key[pygame.K_RIGHT]:
+        player.move(2, 0)
+    if key[pygame.K_UP]:
+        player.move(0, -2)
+    if key[pygame.K_DOWN]:
+        player.move(0, 2)
+
     screen.fill(black)
     for wall in walls:
         pygame.draw.rect(screen, purple, wall.rect)
 
 
     for rect in pathrects:
+
         pygame.draw.rect(screen, selected_purple, rect.rect)
 
     pygame.draw.rect(screen, green, end_rect)
 
-    pygame.draw.rect(screen, white, start_rect)
+    pygame.draw.rect(screen, white, player.rect)
 
 
     pygame.display.update()
