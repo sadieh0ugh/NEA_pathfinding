@@ -22,8 +22,7 @@ pygame.display.set_caption("NEA Code")
 clock = pygame.time.Clock()
 
 
-CellsPerSide = 608 // 24 # 25 x 25 maze, uses DIV to ignore width of lines drawn, range of maze is 25 by 25
-
+CellsPerSide = 500 // 21 # 25 x 25 maze, uses DIV to ignore width of lines drawn, range of maze is 25 by 25
 # each cell holds letters Left, Up, Right, Down - showing which walls they have
 maze = [['lurd' for i in range(CellsPerSide)] for j in range(CellsPerSide)]
 
@@ -37,32 +36,34 @@ unvisited.remove(current)
 visited = [current] # at the start of execution the only square in the visited list is the starting cell
 
 
-class Player(object):
-
-    def __init__(self):
-        self.rect = pygame.Rect(3, 3, 20, 20)
-
-
 def DrawMaze(maze, surface, current):
 
-    pygame.draw.rect(surface, white, (current[1] * 24, current[0] * 24, 24, 24))  # drawing white player
+    global ls1
+    global le1
+
+
+    pygame.draw.rect(surface, white, (current[1] * 25, current[0] * 25, 25, 25))  # drawing white player
     # says position of rectangle is top left corner of current cell x 24 (cell width/height) so the rectangle fills the whole cell
 
     for i, line in enumerate(maze): # gives each line of the maze a count value starting at 0
         for j, element in enumerate(line): # gives each element (cell) of a line a count value
-
-            #
             if 'l' in element:
-                pygame.draw.line(surface, purple, (j * 24, i * 24), (j * 24, i * 24 + 24), 4)
+                ls1 = j * 25
+                ls2 = i * 25
+                le1 = j * 25
+                le2 = i * 25 + 25
 
+                pygame.draw.line(surface, purple, (ls1, ls2), (le1, le2), 4)
             if 'u' in element:
-                pygame.draw.line(surface, purple, (j * 24, i * 24), (j * 24 + 24, i * 24), 4)
-
+                pygame.draw.line(surface, purple, (j * 25, i * 25), (j * 25 + 25, i * 25), 4)
             if 'r' in element:
-                pygame.draw.line(surface, purple, (j * 24 + 24, i * 24), (j * 24 + 24, i * 24 + 24), 4)
-
+                pygame.draw.line(surface, purple, (j * 25 + 25, i * 25), (j * 25 + 25, i * 25 + 25), 4)
             if 'd' in element:
-                pygame.draw.line(surface, purple, (j * 24, i * 24 + 24), (j * 24 + 24, i * 24 + 24), 4)
+                pygame.draw.line(surface, purple, (j * 25, i * 25 + 25), (j * 25 + 25, i * 25 + 25), 4)
+
+
+
+
 
 def NextMove(current, maze, unvisited, visited):
 
@@ -122,47 +123,9 @@ def NextMove(current, maze, unvisited, visited):
         else:
             current = (0, 0)
 
+
     return maze, current, visited, unvisited
-"""
-def Text(maze, textmaze):
 
-    #textmaze = []
-    for i, line in enumerate(maze): # gives each line of the maze a count value starting at
-
-            if 'l' in line:
-                textmaze.append("W")
-
-
-            if 'u' in line:
-                textmaze.append("W")
-
-            if 'r' in line:
-                textmaze.append("W")
-
-            if 'd' in line:
-                textmaze.append("W")
-
-            else:
-                textmaze.append(" ")
-            textmaze.append(",/n")
-    return textmaze
-"""
-player = Player()
-
-def Next(screen):
-    '''running2 = True
-    while running2:
-        clock.tick(270)
-
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                running2 = False
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_g:
-                running2 = False
-'''
-
-    pygame.draw.rect(screen, green, player.rect)
-    pygame.display.update()
 
 
 
@@ -173,8 +136,14 @@ def Next(screen):
 def GameLoop(maze,screen,current,visited,unvisited):
 
     running = True
+    pygame.mouse.set_pos(10,10)
+
+    #image = pygame.image.load('blacksqaure.png')
+    #creen.blit(image, [0,0])
+
+    screenSurface = pygame.display.get_surface()
     while running:
-        clock.tick(270)
+        clock.tick(60)
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -182,17 +151,43 @@ def GameLoop(maze,screen,current,visited,unvisited):
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 running = False
 
+            if e.type == pygame.MOUSEMOTION:
+
+                    mouse = pygame.mouse.get_pos()
+                    pxarray = pygame.PixelArray(screenSurface)
+                    pixel = pygame.Color(pxarray[mouse[0],mouse[1]])
+                    print(pixel)
+
+                    if pixel == (0, 165, 0, 236):
+                        pygame.mouse.set_pos(10,10)
+
+
+
+            #print("mouse press")
+
+
+
+
+
         screen.fill(black)
+
 
         DrawMaze(maze, screen, current)
 
+
         maze, current, visited, unvisited = NextMove(current, maze, unvisited, visited)
-        pygame.display.flip()
+        #pygame.display.flip()
+        #print(maze)
+
+
+        pygame.display.update()
+    pygame.quit()
+    quit()
     #textmaze = []
     #Text(maze, textmaze)
     #print(textmaze)
     #print(maze)
-    Next(screen)
+
 
 GameLoop(maze, screen, current, visited, unvisited)
 
