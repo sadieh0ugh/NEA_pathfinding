@@ -1,6 +1,6 @@
 import pygame
 import random
-
+from ExplanationAndQuiz import *
 
 ScreenWidth = 1100
 ScreenHeight = 605
@@ -13,6 +13,7 @@ orange = (255, 200, 0)
 green = (71, 255, 107)
 purple = (165, 0, 236)
 selected_purple = (218, 128, 255)
+textcol = (204, 153, 255)
 
 pygame.init()
 
@@ -22,6 +23,7 @@ clock = pygame.time.Clock()
 
 font50 = pygame.font.Font("VT323-Regular.ttf", 50)
 font35 = pygame.font.Font("VT323-Regular.ttf", 35)
+font27 = pygame.font.Font("NotoMono-Regular.ttf", 20)
 font20 = pygame.font.Font("VT323-Regular.ttf", 20)
 
 def Drawmaze(mazeLURD, surface, current, CellSize):
@@ -51,7 +53,7 @@ def Drawmaze(mazeLURD, surface, current, CellSize):
 
 '''Function that finds all the possible movements to neighbours of the current cell being checked.
    One of these neighbours is selected at random then the mazeLURD is manipulated to draw path to new cell'''
-def NextMove(current, mazeLURD, unvisited, visited):
+def NextMove(current, mazeLURD, unvisited, visited, surface, size):
 
     # array that holds all the possible movements of the current cell
     Neighbours = []
@@ -138,15 +140,96 @@ def NextMove(current, mazeLURD, unvisited, visited):
             visited = visited[:-1]  # remove last element to go back one step as the algorithm has found a dead end
             current = visited[-1]   # now set current cell to be the new last element
 
-        else:
+        else: # all elements are visited and white square has found its way back to start square
             current = (0, 0)
 
     return mazeLURD, current, visited, unvisited
 
+def GameLoop(mazeLURD, screen, current, CellSize):
 
-def GameLoop():
-    CellSize = 30
-    CellQuotient = 30
+    pygame.mouse.set_pos(CellSize // 2, CellSize // 2)
+
+    InitialCount = pygame.time.get_ticks()
+    screenSurface = pygame.display.get_surface()
+
+    finishedTime = 0
+    timeIncrements = []
+    Timing = False
+    TimePassed = 0
+    running = True
+
+    while running:
+        clock.tick(60)
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                running = False
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                running = False
+
+            if e.type == pygame.MOUSEMOTION:
+
+                mouse = pygame.mouse.get_pos()
+                pxarray = pygame.PixelArray(screenSurface)
+                pixel = pygame.Color(pxarray[mouse[0], mouse[1]])
+                # print(pixel)
+                pxarray.close()  # must close because PixelArray locks the surface making it impossible to blit text into the explanation box
+                # here it is forced to close each time it has been used, unlocking the screen
+
+                if pixel == (0, 165, 0, 236):
+                    pygame.mouse.set_pos(CellSize // 2, CellSize // 2)
+                # print("mouse press")
+
+            elif e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_SPACE:
+                    Timing = True
+                    if Timing:
+                        InitialCount = pygame.time.get_ticks()
+
+            if e.type == pygame.MOUSEMOTION:
+                if pixel == (0, 71, 255, 107):
+                    Timing = False
+                    finishedTime = timeIncrements[-1] / 1000
+                    running = False
+
+                    #textSurf, textRect = textObj("You completed the maze in: " + str(timeIncrements[-1] / 1000) + " seconds", font20, white)
+                    #textRect.center = (820, 300)
+                    #screen.blit(textSurf, textRect)
+                    #pygame.display.flip()
+
+
+
+        if Timing:
+            TimePassed = pygame.time.get_ticks() - InitialCount
+            timeIncrements.append(TimePassed)
+
+
+        screen.fill(black)
+        Drawmaze(mazeLURD, screen, current, CellSize)
+        timerText = font50.render(str(TimePassed / 1000), True, white)
+        screen.blit(timerText, (800, 10))
+
+        textSurf, textRect = textObj("Press Space to Start", font20, white)
+        textRect.center = (820, 70)
+        screen.blit(textSurf, textRect)
+
+
+
+        pygame.draw.rect(screen, green, (540, 540, CellSize, CellSize))
+        textSurf, textRect = textObj("End", font20, black)
+        textRect.center = (560, 570)
+        screen.blit(textSurf, textRect)
+
+        pygame.display.flip()
+
+    print(finishedTime)
+    pygame.quit()
+    quit()
+
+
+def ExplanationAndQuiz():
+    CellSize = 45
+    CellQuotient = 45
     CellsPerSide = ScreenHeight // CellQuotient  # 25 x 25 mazeLURD, uses DIV to ignore width of lines drawn, range of mazeLURD is 25 by 25
     # each cell holds letters Left, Up, Right, Down - showing which walls they have
 
@@ -162,84 +245,55 @@ def GameLoop():
 
     visited = [current]  # at the start of execution the only square in the visited list is the starting cell
 
-    pygame.mouse.set_pos(CellSize//2,CellSize//2)
+    box2 = pygame.image.load('box2.png')
 
-    #image = pygame.image.load('blacksqaure.png')
-    #creen.blit(image, [0,0])
-    screenSurface = pygame.display.get_surface()
-
-    timeIncrements = []
-    Timing = False
-    TimePassed = 0
+    countNpress = 0
     running = True
     while running:
-        clock.tick(45)
-
+        clock.tick(15)
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 running = False
-
-            if e.type == pygame.MOUSEMOTION:
-
-                    mouse = pygame.mouse.get_pos()
-                    pxarray = pygame.PixelArray(screenSurface)
-                    pixel = pygame.Color(pxarray[mouse[0],mouse[1]])
-                    #print(pixel)
-                    pxarray.close()   # must close because PixelArray locks the surface making it impossible to blit text into the explanation box
-                                      # here it is forced to close each time it has been used, unlocking the screen
-
-                    if pixel == (0, 165, 0, 236):
-                        pygame.mouse.set_pos(CellSize//2,CellSize//2)
-            #print("mouse press")
-
-            elif e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_SPACE:
-                    Timing = True
-                    if Timing:
-                        InitialCount = pygame.time.get_ticks()
-
-            if e.type == pygame.MOUSEMOTION:
-                if pixel == (0, 71, 255, 107):
-                    Timing = False
-                    print(timeIncrements[-1]/1000)
-
-        if Timing:
-            TimePassed = pygame.time.get_ticks() - InitialCount
-            timeIncrements.append(TimePassed)
+            elif e.type == pygame.KEYDOWN and e.key == pygame.K_n:
+                Npress = True
+                countNpress += 1
 
         screen.fill(black)
 
-        timerText = font50.render(str(TimePassed / 1000), True, white)
-        screen.blit(timerText, (800, 10))
+        pygame.draw.rect(screen, green, (540, 540, CellSize, CellSize))
 
-        pygame.draw.rect(screen, green, (570, 570, CellSize, CellSize))
+        Drawmaze(mazeLURD, screen, current, CellSize)  # when first called, draws a grid
 
-        Drawmaze(mazeLURD, screen, current, CellSize) # when first called, draws a grid
+        mazeLURD, current, visited, unvisited = NextMove(current, mazeLURD, unvisited, visited, surface=screen, size=CellSize)
 
 
-        mazeLURD, current, visited, unvisited = NextMove(current, mazeLURD, unvisited, visited)
-        #pygame.display.flip()
-        #print(mazeLURD)
+        if countNpress == 0:
+            blitMultiLines(screen, textIntroduction, (605, 10), font27)
 
-        #end_rect = pygame.Rect()
-        #pygame.draw.rect(screen, green, end_rect)
+            pygame.display.flip()
 
-        textSurf, textRect = textObj("Press Space to Start", font20, white)
-        textRect.center = (820, 70)
-        screen.blit(textSurf, textRect)
 
-        textIntroduction = "The maze you see being generated on screen is using the Recursive Backtracking algorithm. \n" \
-                           "The fundamental principles of this algorithm is to begin with a grid and 'carve out' a maze by removing walls"
+        if countNpress >= 1:
+            blitMultiLines(screen, textAlgorithm1, (605, 10), font27)
+            screen.blit(box2, (605, 100))
+            pygame.display.flip()
 
-        blitMultiLines(screen, textIntroduction, (605, 150), font35)
+        if countNpress >= 2:
+            blitMultiLines(screen, textAlgorithm2, (730, 80), font27)
+            pygame.display.flip()
+
+
+        if countNpress == 10:
+            GameLoop(mazeLURD, screen, current, CellSize)
+
         pygame.display.flip()
-    pygame.quit()
-    quit()
+    start_screen()
+    return mazeLURD, screen, current, CellSize
 
-def blitMultiLines(surface, text, pos, font, colour=pygame.Color('white')):
+def blitMultiLines(surface, text, pos, font, colour=selected_purple):
     words = [word.split(' ') for word in text.splitlines()]
     space = font.size(' ')[0]
     maxWidth, maxHeight = surface.get_size()
@@ -277,11 +331,7 @@ def button(msg, x, y, w, h, ic, ac, action=None):
 
         if click1[0] == 1 and action != None:
             if action == "play":
-                LevelSelect()
-
-        if click2[0] == 1 and action != None:
-            if action == "hard":
-                GameLoop()
+                ExplanationAndQuiz()
 
             #elif action == "tutorial":
                 #Tutorial()
@@ -325,5 +375,5 @@ def start_screen():
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 running = False
 
-start_screen()
-#GameLoop()
+#start_screen()
+ExplanationAndQuiz()
