@@ -2,8 +2,8 @@ import pygame
 import random
 from ExplanationAndQuiz import *
 
-ScreenWidth = 1100
-ScreenHeight = 605
+ScreenWidth = 978
+ScreenHeight = 650
 
 #  Colours
 
@@ -24,7 +24,9 @@ clock = pygame.time.Clock()
 font50 = pygame.font.Font("VT323-Regular.ttf", 50)
 font35 = pygame.font.Font("VT323-Regular.ttf", 35)
 font27 = pygame.font.Font("NotoMono-Regular.ttf", 20)
+fontEX = pygame.font.Font("NotoMono-Regular.ttf", 15)
 font20 = pygame.font.Font("VT323-Regular.ttf", 20)
+font25 = pygame.font.Font("VT323-Regular.ttf", 25)
 
 def Drawmaze(mazeLURD, surface, current, CellSize):
 
@@ -226,9 +228,46 @@ def GameLoop(mazeLURD, screen, current, CellSize):
     pygame.quit()
     quit()
 
+def Quiz(mazeLURD,screen,  current, CellSize):
+    Drawmaze(mazeLURD, screen, current, CellSize)
+
+    pygame.display.update()
+
+
+    runningQuiz = True
+
+    while runningQuiz:
+        q1correct = False
+        q2correct = False
+        q3correct = False
+        while not q1correct:
+            blitMultiLines(screen, question1, (510, 10), fontEX)
+            pygame.display.flip()
+            for e in pygame.event.get():
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_b:
+                        q1correct = True
+        while not q2correct:
+            blitMultiLines(screen, question2, (510, 160), fontEX)
+            pygame.display.flip()
+            for e in pygame.event.get():
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_c:
+                        q2correct = True
+        while not q3correct:
+            blitMultiLines(screen, question3, (510, 310), fontEX)
+            pygame.display.flip()
+            for e in pygame.event.get():
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_a:
+                        q3correct = True
+                        runningQuiz = False
+    GameLoop(mazeLURD, screen, current, CellSize)
+
+
 
 def ExplanationAndQuiz():
-    CellSize = 45
+    CellSize = 35
     CellQuotient = 45
     CellsPerSide = ScreenHeight // CellQuotient  # 25 x 25 mazeLURD, uses DIV to ignore width of lines drawn, range of mazeLURD is 25 by 25
     # each cell holds letters Left, Up, Right, Down - showing which walls they have
@@ -242,10 +281,17 @@ def ExplanationAndQuiz():
     # initially all cells in the grid are unvisited except for the starting cell
 
     unvisited.remove(current)
-
+    quizStart = False
     visited = [current]  # at the start of execution the only square in the visited list is the starting cell
 
+    box1 = pygame.image.load('box1.png')
     box2 = pygame.image.load('box2.png')
+    box3 = pygame.image.load('box3.png')
+    box4 = pygame.image.load('box4.png')
+    box5 = pygame.image.load('box5.png')
+    box6 = pygame.image.load('box6.png')
+    box7 = pygame.image.load('box7.png')
+    box8 = pygame.image.load('box8.png')
 
     countNpress = 0
     running = True
@@ -258,38 +304,64 @@ def ExplanationAndQuiz():
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 running = False
             elif e.type == pygame.KEYDOWN and e.key == pygame.K_n:
-                Npress = True
                 countNpress += 1
 
         screen.fill(black)
 
-        pygame.draw.rect(screen, green, (540, 540, CellSize, CellSize))
+        pygame.draw.rect(screen, green, (455, 455, CellSize, CellSize))
+
+        textSurf, textRect = textObj("Diagrams:", font25, white)
+        textRect.center = (55, 510)
+        screen.blit(textSurf, textRect)
 
         Drawmaze(mazeLURD, screen, current, CellSize)  # when first called, draws a grid
 
         mazeLURD, current, visited, unvisited = NextMove(current, mazeLURD, unvisited, visited, surface=screen, size=CellSize)
-
+        pygame.display.flip()
 
         if countNpress == 0:
-            blitMultiLines(screen, textIntroduction, (605, 10), font27)
-
+            blitMultiLines(screen, textIntroduction, (510, 10), font27)
             pygame.display.flip()
+        if countNpress >= 1 and countNpress < 7:
+            blitMultiLines(screen, textAlgorithm1, (510, 15), fontEX)
+            screen.blit(box1, (10, 530))
+            pygame.display.update()
+        if countNpress >= 2 and countNpress < 7:
+            blitMultiLines(screen, textAlgorithm2, (510, 80), fontEX)
+            screen.blit(box2, (131, 530))
+            pygame.display.update()
+        if countNpress >= 3 and countNpress < 7:
+            blitMultiLines(screen, textAlgorithm3, (510, 145), fontEX)
+            screen.blit(box3, (252, 530))
+            screen.blit(box4, (373, 530))
+            screen.blit(box5, (494, 530))
+            pygame.display.update()
+        if countNpress >= 4 and countNpress < 7:
+            blitMultiLines(screen, textAlgorithm4, (510, 210), fontEX)
+            screen.blit(box5, (494, 530))
+            screen.blit(box6, (615, 530))
+            pygame.display.update()
+        if countNpress >= 5 and countNpress < 7:
+            blitMultiLines(screen, textAlgorithm5, (510, 275), fontEX)
+            screen.blit(box7, (736, 530))
+            pygame.display.update()
+        if countNpress >= 6 and countNpress < 7:
+            blitMultiLines(screen, textalgorithm6, (510,340), fontEX)
+            screen.blit(box8, (857, 530))
+            pygame.display.update()
+
+        if countNpress > 6:
+            screenNew = pygame.display.set_mode((978, 500))
+            quizStart = True
+
+        if quizStart:
+            Quiz(mazeLURD, screenNew, current, CellSize)
 
 
-        if countNpress >= 1:
-            blitMultiLines(screen, textAlgorithm1, (605, 10), font27)
-            screen.blit(box2, (605, 100))
-            pygame.display.flip()
-
-        if countNpress >= 2:
-            blitMultiLines(screen, textAlgorithm2, (730, 80), font27)
-            pygame.display.flip()
 
 
-        if countNpress == 10:
-            GameLoop(mazeLURD, screen, current, CellSize)
 
-        pygame.display.flip()
+
     start_screen()
     return mazeLURD, screen, current, CellSize
 
@@ -338,7 +410,6 @@ def button(msg, x, y, w, h, ic, ac, action=None):
     else:
         pygame.draw.rect(screen, ic, (x, y, w, h))  # whenever mouse isnt over box it remains normal colour
 
-    font50 = pygame.font.Font("VT323-Regular.ttf", 50)
     textSurf, textRect = textObj(msg, font50, white)
     textRect.center = ((x + (w / 2)), (y + (h / 2)))  # centres Start text in button 1
     screen.blit(textSurf, textRect)
@@ -359,7 +430,7 @@ def LevelSelect():
                 running = False
 
 def start_screen():
-
+    screen = pygame.display.set_mode((978,650))
     running = True
     while running:
 
