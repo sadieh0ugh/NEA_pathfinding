@@ -1,5 +1,6 @@
 import pygame
 import random
+import sqlite3
 from ExplanationAndQuiz import *
 
 ScreenWidth = 978
@@ -20,6 +21,9 @@ pygame.init()
 screen = pygame.display.set_mode((ScreenWidth,ScreenHeight)) # sets dimensions of the screen (using constants)
 pygame.display.set_caption("NEA Code")
 clock = pygame.time.Clock()
+
+db = sqlite3.connect('scores.db')
+cursor = db.cursor()
 
 font50 = pygame.font.Font("VT323-Regular.ttf", 50)
 font35 = pygame.font.Font("VT323-Regular.ttf", 35)
@@ -147,6 +151,21 @@ def NextMove(current, mazeLURD, unvisited, visited, surface, size):
 
     return mazeLURD, current, visited, unvisited
 
+def LeaderboardSQL():
+
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS leaderboard(name TEXT, score REAL)''')
+    # cursor.execute('''DROP TABLE IF EXISTS leaderboard''')
+
+    cursor.execute('''INSERT INTO leaderboard(name, score) VALUES ('Sadie', 35.465)''')
+    db.commit()
+    for row in cursor:
+        Name = row[0]
+        Score = row[1]
+
+        print(Name, Score)
+
+
 def GameLoop(mazeLURD, screen, current, CellSize):
 
     pygame.mouse.set_pos(CellSize // 2, CellSize // 2)
@@ -199,8 +218,6 @@ def GameLoop(mazeLURD, screen, current, CellSize):
                     #screen.blit(textSurf, textRect)
                     #pygame.display.flip()
 
-
-
         if Timing:
             TimePassed = pygame.time.get_ticks() - InitialCount
             timeIncrements.append(TimePassed)
@@ -215,9 +232,7 @@ def GameLoop(mazeLURD, screen, current, CellSize):
         textRect.center = (820, 70)
         screen.blit(textSurf, textRect)
 
-
-
-        pygame.draw.rect(screen, green, (540, 540, CellSize, CellSize))
+        pygame.draw.rect(screen, green, (455, 455, CellSize, CellSize))
         textSurf, textRect = textObj("End", font20, black)
         textRect.center = (560, 570)
         screen.blit(textSurf, textRect)
@@ -241,26 +256,39 @@ def Quiz(mazeLURD,screen,  current, CellSize):
         q2correct = False
         q3correct = False
         while not q1correct:
-            blitMultiLines(screen, question1, (510, 10), fontEX)
+            blitMultiLines(screen, question1, (510, 5), fontEX)
             pygame.display.flip()
             for e in pygame.event.get():
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_b:
                         q1correct = True
+                        blitMultiLines(screen, correct, (510, 115), fontEX)
+                        pygame.display.flip()
+                    else:
+                        q1correct = False
+
         while not q2correct:
-            blitMultiLines(screen, question2, (510, 160), fontEX)
+            blitMultiLines(screen, question2, (510, 130), fontEX)
             pygame.display.flip()
             for e in pygame.event.get():
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_c:
                         q2correct = True
+                        blitMultiLines(screen, correct, (510, 240), fontEX)
+                        pygame.display.flip()
+                    else:
+                        q2correct = False
+
         while not q3correct:
-            blitMultiLines(screen, question3, (510, 310), fontEX)
+            blitMultiLines(screen, question3, (510, 255), fontEX)
             pygame.display.flip()
             for e in pygame.event.get():
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_a:
                         q3correct = True
+                        blitMultiLines(screen, gamePlay, (510, 365), fontEX)
+                        pygame.display.flip()
+                        pygame.time.wait(5000)
                         runningQuiz = False
     GameLoop(mazeLURD, screen, current, CellSize)
 
@@ -284,14 +312,7 @@ def ExplanationAndQuiz():
     quizStart = False
     visited = [current]  # at the start of execution the only square in the visited list is the starting cell
 
-    box1 = pygame.image.load('box1.png')
-    box2 = pygame.image.load('box2.png')
-    box3 = pygame.image.load('box3.png')
-    box4 = pygame.image.load('box4.png')
-    box5 = pygame.image.load('box5.png')
-    box6 = pygame.image.load('box6.png')
-    box7 = pygame.image.load('box7.png')
-    box8 = pygame.image.load('box8.png')
+
 
     countNpress = 0
     running = True
@@ -432,13 +453,14 @@ def LevelSelect():
 def start_screen():
     screen = pygame.display.set_mode((978,650))
     running = True
+    count = 0
+    count2 = 0
+    star1 = pygame.image.load('star1.png')
     while running:
 
         clock.tick(15)
-        screen.fill(black)
 
-        button("Tutorial", 150, 300, 200, 100, purple, selected_purple,"tutorial")
-        button("Start", 600, 300, 200, 100, purple, selected_purple,"play")
+
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -446,5 +468,25 @@ def start_screen():
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 running = False
 
-#start_screen()
-ExplanationAndQuiz()
+        while count < 60:
+            randomX = random.randint(0, ScreenWidth)
+            randomY = random.randint(0, ScreenHeight)
+            pygame.draw.rect(screen, white, (randomX, randomY, 5, 5))
+            pygame.display.update()
+            count += 1
+
+
+        while count2 < 10:
+            randomX2 = random.randint(0, ScreenWidth)
+            randomY2 = random.randint(0, ScreenHeight)
+
+            screen.blit(star1, (randomX2, randomY2))
+            pygame.display.update()
+            count2 += 1
+
+        button("Tutorial", 150, 300, 200, 100, purple, selected_purple, "tutorial")
+        button("Start", 600, 300, 200, 100, purple, selected_purple, "play")
+
+
+start_screen()
+#ExplanationAndQuiz()
