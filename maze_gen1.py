@@ -15,6 +15,7 @@ green = (71, 255, 107)
 purple = (165, 0, 236)
 selected_purple = (218, 128, 255)
 textcol = (204, 153, 255)
+blue = (156, 111, 227)
 
 pygame.init()
 
@@ -154,16 +155,45 @@ def NextMove(current, mazeLURD, unvisited, visited, surface, size):
 def LeaderboardSQL():
 
 
-    cursor.execute('''CREATE TABLE IF NOT EXISTS leaderboard(name TEXT, score REAL)''')
-    # cursor.execute('''DROP TABLE IF EXISTS leaderboard''')
+    #cursor.execute('''CREATE TABLE IF NOT EXISTS leaderboard(name TEXT, score REAL)''')
+    #cursor.execute('''DROP TABLE IF EXISTS leaderboard''')
 
-    cursor.execute('''INSERT INTO leaderboard(name, score) VALUES ('Sadie', 35.465)''')
-    db.commit()
+    #cursor.execute('''INSERT INTO leaderboard(name, score) VALUES ('Sadie', 35.465)''')
+
+    #db.commit()
+
+    cursor.execute('''SELECT * FROM leaderboard''')
+
     for row in cursor:
-        Name = row[0]
-        Score = row[1]
+        print(row[0], row[1])
 
-        print(Name, Score)
+def NewHighScore(score):
+    names = [name[0] for name in cursor.execute('''SELECT name FROM leaderboard''')]
+    NewName = str(input("Insert name: "))
+    NameExists = False
+    for name in names:
+        if NewName == name:
+            NameExists = True
+
+    if not NameExists:
+        cursor.execute('''INSERT INTO leaderboard (name, score) VALUES (?,?)''', (NewName, score))
+        db.commit()
+    else:
+        cursor.execute('''UPDATE leaderboard SET score=? WHERE name=?''', (score, NewName))
+        db.commit()
+
+    LeaderboardSQL()
+
+
+
+
+
+
+
+
+
+
+
 
 
 def GameLoop(mazeLURD, screen, current, CellSize):
@@ -240,8 +270,13 @@ def GameLoop(mazeLURD, screen, current, CellSize):
         pygame.display.flip()
 
     print(finishedTime)
+
     pygame.quit()
+
+    NewHighScore(finishedTime)
     quit()
+
+
 
 def Quiz(mazeLURD,screen,  current, CellSize):
     Drawmaze(mazeLURD, screen, current, CellSize)
@@ -256,37 +291,37 @@ def Quiz(mazeLURD,screen,  current, CellSize):
         q2correct = False
         q3correct = False
         while not q1correct:
-            blitMultiLines(screen, question1, (510, 5), fontEX)
+            blitMultiLines(screen, question1, (510, 5), fontEX, white, ScreenWidth)
             pygame.display.flip()
             for e in pygame.event.get():
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_b:
                         q1correct = True
-                        blitMultiLines(screen, correct, (510, 115), fontEX)
+                        blitMultiLines(screen, correct, (510, 115), fontEX, selected_purple, ScreenWidth)
                         pygame.display.flip()
                     else:
                         q1correct = False
 
         while not q2correct:
-            blitMultiLines(screen, question2, (510, 130), fontEX)
+            blitMultiLines(screen, question2, (510, 130), fontEX, white, ScreenWidth)
             pygame.display.flip()
             for e in pygame.event.get():
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_c:
                         q2correct = True
-                        blitMultiLines(screen, correct, (510, 240), fontEX)
+                        blitMultiLines(screen, correct, (510, 240), fontEX, selected_purple, ScreenWidth)
                         pygame.display.flip()
                     else:
                         q2correct = False
 
         while not q3correct:
-            blitMultiLines(screen, question3, (510, 255), fontEX)
+            blitMultiLines(screen, question3, (510, 255), fontEX,white, ScreenWidth)
             pygame.display.flip()
             for e in pygame.event.get():
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_a:
                         q3correct = True
-                        blitMultiLines(screen, gamePlay, (510, 365), fontEX)
+                        blitMultiLines(screen, gamePlay, (510, 365), fontEX, selected_purple, ScreenWidth)
                         pygame.display.flip()
                         pygame.time.wait(5000)
                         runningQuiz = False
@@ -341,33 +376,33 @@ def ExplanationAndQuiz():
         pygame.display.flip()
 
         if countNpress == 0:
-            blitMultiLines(screen, textIntroduction, (510, 10), font27)
+            blitMultiLines(screen, textIntroduction, (510, 10), font27, blue, ScreenWidth)
             pygame.display.flip()
-        if countNpress >= 1 and countNpress < 7:
-            blitMultiLines(screen, textAlgorithm1, (510, 15), fontEX)
+        if 1 <= countNpress < 7:
+            blitMultiLines(screen, textAlgorithm1, (510, 15), fontEX, blue, ScreenWidth)
             screen.blit(box1, (10, 530))
             pygame.display.update()
-        if countNpress >= 2 and countNpress < 7:
-            blitMultiLines(screen, textAlgorithm2, (510, 80), fontEX)
+        if 2 <= countNpress < 7:
+            blitMultiLines(screen, textAlgorithm2, (510, 80), fontEX, blue, ScreenWidth)
             screen.blit(box2, (131, 530))
             pygame.display.update()
-        if countNpress >= 3 and countNpress < 7:
-            blitMultiLines(screen, textAlgorithm3, (510, 145), fontEX)
+        if 3 <= countNpress < 7:
+            blitMultiLines(screen, textAlgorithm3, (510, 145), fontEX, blue, ScreenWidth)
             screen.blit(box3, (252, 530))
             screen.blit(box4, (373, 530))
             screen.blit(box5, (494, 530))
             pygame.display.update()
-        if countNpress >= 4 and countNpress < 7:
-            blitMultiLines(screen, textAlgorithm4, (510, 210), fontEX)
+        if 4 <= countNpress < 7:
+            blitMultiLines(screen, textAlgorithm4, (510, 210), fontEX, blue, ScreenWidth)
             screen.blit(box5, (494, 530))
             screen.blit(box6, (615, 530))
             pygame.display.update()
-        if countNpress >= 5 and countNpress < 7:
-            blitMultiLines(screen, textAlgorithm5, (510, 275), fontEX)
+        if 5 <= countNpress < 7:
+            blitMultiLines(screen, textAlgorithm5, (510, 275), fontEX,blue, ScreenWidth)
             screen.blit(box7, (736, 530))
             pygame.display.update()
-        if countNpress >= 6 and countNpress < 7:
-            blitMultiLines(screen, textalgorithm6, (510,340), fontEX)
+        if 6 <= countNpress < 7:
+            blitMultiLines(screen, textalgorithm6, (510,340), fontEX,blue, ScreenWidth)
             screen.blit(box8, (857, 530))
             pygame.display.update()
 
@@ -378,24 +413,51 @@ def ExplanationAndQuiz():
         if quizStart:
             Quiz(mazeLURD, screenNew, current, CellSize)
 
-
-
-
-
-
     start_screen()
     return mazeLURD, screen, current, CellSize
 
-def blitMultiLines(surface, text, pos, font, colour=selected_purple):
+
+def Tutorial():
+    screen = pygame.display.set_mode((978, 650))
+    running = True
+    while running:
+        clock.tick(15)
+        screen.fill(black)
+
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                running = False
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                running = False
+
+        textSurf, textRect = textObj("Welcome to the Tutorial:", font50, white)
+        textRect.center = (ScreenWidth//2, 30)
+        screen.blit(textSurf, textRect)
+
+        textSurf, textRect = textObj("What is a Recursive Algorithm?", font35, white)
+        textRect.center = (230, 120)
+        screen.blit(textSurf, textRect)
+
+        textSurf, textRect = textObj("How to Play:", font35, white)
+        textRect.center = ((ScreenWidth // 2) + 150, 120)
+        screen.blit(textSurf, textRect)
+
+        pygame.draw.line(screen, white, (ScreenWidth//2, 90), (ScreenWidth//2, ScreenHeight-50), 5)
+
+        blitMultiLines(screen, TutorialText, (30,150), fontEX, white, ScreenWidth//2)
+        pygame.display.update()
+    start_screen()
+
+def blitMultiLines(surface, text, pos, font, colour, edge):
     words = [word.split(' ') for word in text.splitlines()]
     space = font.size(' ')[0]
-    maxWidth, maxHeight = surface.get_size()
     x, y = pos
     for line in words:
         for word in line:
             wordSurf = font.render(word, 0, colour)
             wordWidth, wordHeight = wordSurf.get_size()
-            if x + wordWidth >= maxWidth:
+            if x + wordWidth >= edge:
                 x = pos[0]
                 y += wordHeight
             surface.blit(wordSurf, (x, y))
@@ -416,18 +478,18 @@ def textObj(text, font, col):
 def button(msg, x, y, w, h, ic, ac, action=None):
     mouse = pygame.mouse.get_pos()
     #print(mouse)    if need to see positions easier for placing
-    click1 = pygame.mouse.get_pressed()
-    click2 = pygame.mouse.get_pressed()
+    click = pygame.mouse.get_pressed()
+
 
     if x + w > mouse[0] > x and y + h > mouse[1] > y:  # if mouse position is found in range inside drawn box
         pygame.draw.rect(screen, ac,(x, y, w, h)) # then redraw box a lighter shade so it appears interactive
 
-        if click1[0] == 1 and action != None:
+        if click[0] == 1:
             if action == "play":
                 ExplanationAndQuiz()
 
-            #elif action == "tutorial":
-                #Tutorial()
+            if action == "tutorial":
+                Tutorial()
     else:
         pygame.draw.rect(screen, ic, (x, y, w, h))  # whenever mouse isnt over box it remains normal colour
 
@@ -436,19 +498,7 @@ def button(msg, x, y, w, h, ic, ac, action=None):
     screen.blit(textSurf, textRect)
     pygame.display.update()
 
-def LevelSelect():
-    running = True
-    while running:
-        clock.tick(15)
-        screen.fill(black)
 
-        button("Beginner", 150, 300, 200, 100, purple, selected_purple, "easy")
-        button("Intermediate", 600, 300, 200, 100, purple, selected_purple, "hard")
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                running = False
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-                running = False
 
 def start_screen():
     screen = pygame.display.set_mode((978,650))
@@ -459,8 +509,6 @@ def start_screen():
     while running:
 
         clock.tick(15)
-
-
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -486,7 +534,11 @@ def start_screen():
 
         button("Tutorial", 150, 300, 200, 100, purple, selected_purple, "tutorial")
         button("Start", 600, 300, 200, 100, purple, selected_purple, "play")
+    pygame.quit()
+    quit()
 
 
-start_screen()
+#start_screen()
 #ExplanationAndQuiz()
+LeaderboardSQL()
+#Tutorial()
